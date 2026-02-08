@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MGMT 258 Happiness - Visual Knowledge Atlas</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {
+        primaryColor: '#e3f2fd',
+        primaryTextColor: '#1a1a1a',
+        primaryBorderColor: '#1976d2',
+        lineColor: '#424242',
+        secondaryColor: '#f5f5f5',
+        tertiaryColor: '#fff'
+    },
+    mindmap: { useMaxWidth: true },
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+});
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1a1a2e; line-height: 1.6; }
+.atlas { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+/* Hero */
+.hero { text-align: center; padding: 48px 24px; background: linear-gradient(135deg, #0f3460, #16213e); color: #fff; border-radius: 20px; margin-bottom: 32px; }
+.hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+.hero p { font-size: 14px; opacity: 0.8; }
+.hero .stats { display: flex; justify-content: center; gap: 24px; margin-top: 16px; }
+.hero .stat { background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 10px; }
+.hero .stat .num { font-size: 20px; font-weight: 800; }
+.hero .stat .label { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Section */
+.section { margin-bottom: 40px; scroll-margin-top: 20px; }
+.section-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.section-subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
+.week-badge { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.wb1 { background: #e3f2fd; color: #1565c0; }
+.wb2 { background: #fce4ec; color: #c62828; }
+.wb3 { background: #e8f5e9; color: #2e7d32; }
+.wb4 { background: #fff3e0; color: #e65100; }
+.wb5 { background: #f3e5f5; color: #6a1b9a; }
+.wb0 { background: #e0e0e0; color: #424242; }
+
+/* Diagram Card */
+.dcard { background: #fff; border-radius: 14px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #eee; }
+.dcard h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: #16213e; }
+.dcard .context { font-size: 12px; color: #888; margin-bottom: 14px; }
+.dcard .mermaid { display: flex; justify-content: center; }
+
+/* Takeaway Box */
+.takeaway { background: #fffde7; border: 1px solid #fff9c4; border-radius: 10px; padding: 12px 16px; font-size: 12.5px; margin-top: 12px; line-height: 1.6; }
+.takeaway strong { color: #e65100; }
+.exam-tip { background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 10px; padding: 12px 16px; font-size: 12.5px; margin-top: 12px; }
+.exam-tip strong { color: #1565c0; }
+
+/* Grid */
+.dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .dgrid { grid-template-columns: 1fr; } }
+
+/* Notion Nav */
+.nav-container { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1000; }
+.nav-lines { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; cursor: pointer; padding: 8px; }
+.nav-line { width: 16px; height: 2px; background: rgba(84,72,49,0.15); border-radius: 1px; transition: all 0.2s; }
+.nav-line.active { background: rgb(50,48,44); width: 20px; }
+.nav-panel { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 220px; background: #fff; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08); padding: 12px 0; opacity: 0; pointer-events: none; transition: opacity 0.2s cubic-bezier(0.2,0,0.38,0.9), transform 0.2s cubic-bezier(0.2,0,0.38,0.9); transform: translateY(-50%) translateX(10px) scale(0.95); }
+.nav-container:hover .nav-panel { opacity: 1; pointer-events: all; transform: translateY(-50%) translateX(0) scale(1); }
+.nav-item { padding: 6px 16px; font-size: 12px; color: #555; cursor: pointer; transition: background 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-item:hover { background: #f5f5f5; }
+.nav-item.active { color: #16213e; font-weight: 700; }
+
+/* Print */
+@media print { .nav-container { display: none; } .hero { break-after: page; } .dcard { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; } body { background: #fff; } }
+</style>
+</head>
+<body>
+
+<!-- Notion Nav -->
+<div class="nav-container">
+    <div class="nav-lines" id="navLines"></div>
+    <div class="nav-panel" id="navPanel"></div>
+</div>
+
+<div class="atlas">
+
+<div class="hero">
+    <h1>MGMT 258: Visual Knowledge Atlas</h1>
+    <p>The Science of Happiness | Weeks 1-5 | Prof. Cassie Holmes | Winter 2026</p>
+    <div class="stats">
+        <div class="stat"><div class="num">31</div><div class="label">Diagrams</div></div>
+        <div class="stat"><div class="num">5</div><div class="label">Weeks</div></div>
+        <div class="stat"><div class="num">95+</div><div class="label">Target Score</div></div>
+    </div>
+</div>
+
+<!-- ===== SECTION 0: MASTER OVERVIEW ===== -->
+<div class="section" id="s0" data-nav="Master Overview">
+<div class="section-title"><span class="week-badge wb0">ALL</span> Master Course Map</div>
+<div class="section-subtitle">How every concept connects across 5 weeks</div>
+
+<div class="dcard">
+<h3>1. Full Course Concept Map</h3>
+<div class="context">Every major concept from Weeks 1-5 and how they relate to each other.</div>
+<pre class="mermaid">
+mindmap
+  root((HAPPINESS))
+    Week 1/Definition
+      SWB = Satisfaction + Positive - Negative
+      Hedonic vs Eudaimonic
+      50-40-10 Model
+        50% Genes
+        40% Intentional Activity
+        10% Circumstances
+    Week 2/Obstacles
+      Hedonic Adaptation
+      Social Comparison
+      Impact Bias/Focalism
+      Hedonic Treadmill
+      Anti-Adaptation Toolkit
+        Experiences over Things
+        Variety
+        Gratitude
+        Routines to Rituals
+        Finitude
+        Savoring
+    Week 3/Time
+      Time Affluence vs Poverty
+      Time Crafting
+      Time = Means AND End
+      Extraordinary vs Ordinary
+      Socioemotional Selectivity
+    Week 4/Social
+      Harvard Study/#1 Predictor
+      Weak Ties Matter
+      Active Constructive Responding
+      Reaching Out Miscalibration
+    Week 5/Practices
+      Gratitude Journal and Letter
+      Mindfulness/47% Wandering
+      Exercise vs Medication
+      Sleep Foundation
+      Flow State
+</pre>
+</div>
+
+<div class="dcard">
+<h3>2. Weekly Topic Timeline</h3>
+<div class="context">What each week covered at a glance.</div>
+<pre class="mermaid">
+timeline
+    title MGMT 258 Weeks 1-5
+    Week 1 / What is Happiness
+        : SWB Definition
+        : 50-40-10 Model
+        : Hedonic vs Eudaimonic
+    Week 2 / Obstacles
+        : Hedonic Adaptation
+        : Social Comparison
+        : Impact Bias
+        : Anti-Adaptation Strategies
+    Week 3 / Time
+        : Time vs Money
+        : Time Crafting
+        : Extraordinary vs Ordinary
+    Week 4 / Social Connection
+        : Harvard Study
+        : Weak Ties
+        : ACR Model
+    Week 5 / Well-being Practices
+        : Gratitude
+        : Mindfulness
+        : Exercise and Sleep
+        : Flow State
+</pre>
+</div>
+</div>
+
+<!-- ===== SECTION 1: WHAT IS HAPPINESS ===== -->
+<div class="section" id="s1" data-nav="Week 1: What is Happiness?">
+<div class="section-title"><span class="week-badge wb1">W1</span> What is Happiness?</div>
+<div class="section-subtitle">Defining and measuring happiness scientifically</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>3. Subjective Well-Being (SWB)</h3>
+<div class="context">The scientific definition of happiness has three components.</div>
+<pre class="mermaid">
+flowchart TD
+    SWB["SUBJECTIVE WELL-BEING<br/>(Your Overall Happiness)"]
+    SWB --> COG["Cognitive<br/>Life Satisfaction<br/>(How you evaluate your life)"]
+    SWB --> POS["Positive Affect<br/>Joy, Love, Contentment<br/>(Emotional +)"]
+    SWB --> NEG["Low Negative Affect<br/>Less Sadness, Anxiety<br/>(Emotional -)"]
+    COG --> F["SWB = Satisfaction + Positive - Negative"]
+    POS --> F
+    NEG --> F
+    style SWB fill:#1565c0,color:#fff
+    style F fill:#e3f2fd,color:#1a1a1a
+</pre>
+<div class="takeaway"><strong>Key:</strong> Happiness is NOT just feeling good. It includes thinking your life is going well (cognitive) AND having more positive than negative emotions. You don't need ZERO negative emotions.</div>
+</div>
+
+<div class="dcard">
+<h3>4. The 50-40-10 Model</h3>
+<div class="context">What determines your happiness? Surprisingly, circumstances barely matter.</div>
+<pre class="mermaid">
+pie title What Determines Happiness?
+    "Genetic Set Point (50%)" : 50
+    "Intentional Activity (40%)" : 40
+    "Circumstances (10%)" : 10
+</pre>
+<div class="takeaway"><strong>Key:</strong> You can't change genes (50%). Circumstances barely matter (10%). YOUR CHOICES matter a LOT (40%). This 40% is everything taught in this course!</div>
+</div>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>5. Hedonic vs. Eudaimonic Happiness</h3>
+<div class="context">Two different types of happiness that together create a fulfilling life.</div>
+<pre class="mermaid">
+flowchart LR
+    H["HAPPINESS"] --> HED["HEDONIC<br/>Pleasure, Enjoyment<br/>Feeling Good"]
+    H --> EUD["EUDAIMONIC<br/>Meaning, Purpose<br/>Living Well"]
+    HED --> B["Best Life =<br/>BOTH Types"]
+    EUD --> B
+    style HED fill:#fff3e0,color:#1a1a1a
+    style EUD fill:#e8f5e9,color:#1a1a1a
+    style B fill:#1565c0,color:#fff
+</pre>
+</div>
+
+<div class="dcard">
+<h3>6. The 40%: Intentional Activities</h3>
+<div class="context">What counts as intentional activity? Everything in this course!</div>
+<pre class="mermaid">
+mindmap
+  root((40% YOU CONTROL))
+    Gratitude
+      Journal
+      Letter/Visit
+    Social Connection
+      Relationships
+      Weak Ties
+      ACR
+    Physical Health
+      Exercise
+      Sleep
+    Mental Practices
+      Mindfulness
+      Flow Activities
+    Time Design
+      Time Crafting
+      Experiences over Things
+</pre>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 2: THREE ENEMIES ===== -->
+<div class="section" id="s2" data-nav="Week 2: Three Enemies">
+<div class="section-title"><span class="week-badge wb2">W2</span> Three Enemies of Happiness</div>
+<div class="section-subtitle">The psychological tendencies that undermine your well-being</div>
+
+<div class="dcard">
+<h3>7. The Hedonic Treadmill Cycle</h3>
+<div class="context">How three tendencies combine to create an endless, futile pursuit of happiness through achievements.</div>
+<pre class="mermaid">
+flowchart LR
+    IB["IMPACT BIAS<br/>If I get X, I'll be<br/>happy FOREVER!"] --> CHASE["CHASE<br/>the Goal"]
+    CHASE --> GET["GET IT!<br/>Initial excitement"]
+    GET --> HA["HEDONIC ADAPTATION<br/>Excitement fades.<br/>X becomes 'normal'"]
+    HA --> SC["SOCIAL COMPARISON<br/>But Y has more<br/>than X. I need X+1!"]
+    SC --> IB
+    style IB fill:#fce4ec,color:#1a1a1a
+    style HA fill:#fce4ec,color:#1a1a1a
+    style SC fill:#fce4ec,color:#1a1a1a
+    style GET fill:#e8f5e9,color:#1a1a1a
+    style CHASE fill:#fff3e0,color:#1a1a1a
+</pre>
+<div class="takeaway"><strong>The Hedonic Treadmill:</strong> Impact Bias makes you chase goals. Adaptation erases the boost. Comparison raises the bar. Repeat forever. Running hard, going nowhere.</div>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>8. Hedonic Adaptation</h3>
+<div class="context">We get used to both good AND bad things. The excitement of a new car fades in months.</div>
+<pre class="mermaid">
+flowchart TD
+    E["Positive Event<br/>(Buy new car)"] --> PEAK["Initial Excitement!"]
+    PEAK --> FADE["Excitement Fades<br/>(weeks to months)"]
+    FADE --> BASE["Back to Baseline<br/>(new normal)"]
+    BASE --> WANT["Want Something<br/>NEW again"]
+    NE["Negative Event<br/>(Job loss)"] --> SAD["Initial Distress"]
+    SAD --> RECOVER["Gradual Recovery<br/>(psychological immune system)"]
+    RECOVER --> BASE2["Closer to Baseline<br/>than expected"]
+    style PEAK fill:#e8f5e9,color:#1a1a1a
+    style SAD fill:#fce4ec,color:#1a1a1a
+    style BASE fill:#f5f5f5,color:#1a1a1a
+    style BASE2 fill:#f5f5f5,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>9. Social Comparison</h3>
+<div class="context">Your happiness depends on who you compare yourself to, not your absolute situation.</div>
+<pre class="mermaid">
+flowchart TD
+    YOU["YOUR SALARY: $100K"] --> SA["Scenario A:<br/>Colleagues earn $80K"]
+    YOU --> SB["Scenario B:<br/>Colleagues earn $120K"]
+    SA --> HAPPY["HAPPY!<br/>Feel well-paid"]
+    SB --> SAD["UNHAPPY<br/>Feel underpaid"]
+    SAME["Same $100K.<br/>Different happiness.<br/>It's ALL relative."]
+    HAPPY --> SAME
+    SAD --> SAME
+    style HAPPY fill:#e8f5e9,color:#1a1a1a
+    style SAD fill:#fce4ec,color:#1a1a1a
+    style SAME fill:#fffde7,color:#1a1a1a
+</pre>
+</div>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>10. Impact Bias & Focalism</h3>
+<div class="context">We overestimate how events will affect our happiness (intensity and duration).</div>
+<pre class="mermaid">
+flowchart LR
+    PRED["YOUR PREDICTION:<br/>If I don't get into UCLA,<br/>my life is OVER"] --> REAL["REALITY:<br/>Sad for 2 weeks.<br/>Found another school.<br/>Life is fine."]
+    WHY["WHY?"] --> PSY["Psychological<br/>Immune System"]
+    WHY --> FOC["Focalism:<br/>Forgot about all<br/>OTHER things in life"]
+    PRED --> WHY
+    style PRED fill:#fce4ec,color:#1a1a1a
+    style REAL fill:#e8f5e9,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>11. Psychological Immune System</h3>
+<div class="context">We recover from negative events better than we predict. We are more resilient than we think.</div>
+<pre class="mermaid">
+flowchart TD
+    BAD["Bad Event Happens"] --> PREDICT["What you PREDICT:<br/>Devastating, Long-lasting"]
+    BAD --> ACTUAL["What ACTUALLY happens:<br/>Cope, Rationalize, Find silver lining"]
+    ACTUAL --> RECOVER["Recovery: Faster and<br/>more complete than expected"]
+    PREDICT --> WRONG["Over-prediction<br/>= IMPACT BIAS"]
+    style PREDICT fill:#fce4ec,color:#1a1a1a
+    style ACTUAL fill:#e8f5e9,color:#1a1a1a
+    style RECOVER fill:#e3f2fd,color:#1a1a1a
+</pre>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 3: ANTI-ADAPTATION ===== -->
+<div class="section" id="s3" data-nav="Anti-Adaptation Toolkit">
+<div class="section-title"><span class="week-badge wb2">W2</span> Anti-Adaptation Toolkit</div>
+<div class="section-subtitle">6 evidence-based strategies to fight hedonic adaptation</div>
+
+<div class="dcard">
+<h3>12. Six Strategies to Fight Adaptation</h3>
+<div class="context">Each strategy disrupts the automatic "getting used to it" process in a different way.</div>
+<pre class="mermaid">
+flowchart TD
+    FIGHT["HOW TO FIGHT<br/>HEDONIC ADAPTATION"] --> S1["Invest in EXPERIENCES<br/>not Things"]
+    FIGHT --> S2["Add VARIETY<br/>Break routines"]
+    FIGHT --> S3["Practice GRATITUDE<br/>Re-notice the good"]
+    FIGHT --> S4["ROUTINES to RITUALS<br/>Add intention to habits"]
+    FIGHT --> S5["Recognize FINITUDE<br/>Count how many left"]
+    FIGHT --> S6["SAVORING / BREAKS<br/>Interrupt to reset"]
+    S1 --> W1["Becomes identity,<br/>resists comparison"]
+    S2 --> W2["Novelty resets<br/>attention"]
+    S3 --> W3["Redirects focus<br/>to positives"]
+    S4 --> W4["Mindful attention<br/>re-engages brain"]
+    S5 --> W5["Impermanence<br/>restores appreciation"]
+    S6 --> W6["Interruption resets<br/>pleasure baseline"]
+    style FIGHT fill:#c62828,color:#fff
+    style S1 fill:#fff3e0,color:#1a1a1a
+    style S2 fill:#fff3e0,color:#1a1a1a
+    style S3 fill:#fff3e0,color:#1a1a1a
+    style S4 fill:#fff3e0,color:#1a1a1a
+    style S5 fill:#fff3e0,color:#1a1a1a
+    style S6 fill:#fff3e0,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>13. Savoring with Breaks</h3>
+<div class="context">Paradox: Interrupting a positive experience increases total enjoyment.</div>
+<pre class="mermaid">
+sequenceDiagram
+    participant C as Continuous
+    participant B as With Breaks
+    Note over C: Eat chocolate non-stop
+    C->>C: Piece 1 (Great!)
+    C->>C: Piece 2 (Good)
+    C->>C: Piece 3 (OK)
+    C->>C: Piece 4 (Meh)
+    C->>C: Piece 5 (Barely notice)
+    Note over C: Total enjoyment: LOW (adapted)
+    Note over B: Eat with intentional breaks
+    B->>B: Piece 1-2 (Great!)
+    B->>B: 10 min BREAK (do something else)
+    B->>B: Piece 3-4 (Great again! Reset!)
+    B->>B: 10 min BREAK
+    B->>B: Piece 5 (Still good!)
+    Note over B: Total enjoyment: HIGH (reset each time)
+</pre>
+<div class="takeaway"><strong>Key:</strong> Breaks reset hedonic adaptation. Spacing out positive experiences preserves their novelty and pleasure.</div>
+</div>
+</div>
+
+<!-- ===== SECTION 4: TIME & HAPPINESS ===== -->
+<div class="section" id="s4" data-nav="Week 3: Time & Happiness">
+<div class="section-title"><span class="week-badge wb3">W3</span> Time & Happiness</div>
+<div class="section-subtitle">Why time is your most precious resource</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>14. Time vs. Money</h3>
+<div class="context">A fundamental reframe: time is both a means AND an end.</div>
+<pre class="mermaid">
+flowchart LR
+    M["MONEY"] --> MEANS["Only a MEANS<br/>(tool to get things)"]
+    T["TIME"] --> BOTH["MEANS<br/>(use to achieve goals)"]
+    T --> END["AND an END<br/>(your time IS your life)"]
+    MEANS --> INS["Insight: When primed<br/>to think about TIME,<br/>people make happier choices"]
+    BOTH --> INS
+    END --> INS
+    style T fill:#2e7d32,color:#fff
+    style M fill:#f5f5f5,color:#1a1a1a
+    style INS fill:#e8f5e9,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>15. Free Time vs. Happiness</h3>
+<div class="context">Too little AND too much free time reduce happiness. Sweet spot: 2-5 hours/day.</div>
+<pre class="mermaid">
+xychart-beta
+    title "Free Time vs. Happiness (Inverted U)"
+    x-axis "Daily Free Time (hrs)" [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    y-axis "Happiness Level" 0 --> 100
+    line [25, 50, 72, 82, 88, 85, 75, 60, 45]
+</pre>
+<div class="takeaway"><strong>Key:</strong> Too little free time = time poverty (stress). Too much (7+ hrs) = lack of purpose. The sweet spot is about 2-5 hours of discretionary time per day.</div>
+</div>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>16. Time Crafting: 3 Steps</h3>
+<div class="context">Intentionally redesign how you spend your time. Prof. Holmes' research.</div>
+<pre class="mermaid">
+flowchart LR
+    S1["STEP 1: TRACK<br/>Monitor time use<br/>for one week"] --> S2["STEP 2: EVALUATE<br/>Rate each activity<br/>by happiness"]
+    S2 --> S3["STEP 3: REDESIGN<br/>Reduce low-joy,<br/>Increase high-joy"]
+    S3 --> R["Result: More time<br/>on what truly matters"]
+    style S1 fill:#e8f5e9,color:#1a1a1a
+    style S2 fill:#e8f5e9,color:#1a1a1a
+    style S3 fill:#e8f5e9,color:#1a1a1a
+    style R fill:#2e7d32,color:#fff
+</pre>
+</div>
+
+<div class="dcard">
+<h3>17. Activities Ranked by Happiness</h3>
+<div class="context">Time-tracking data reveals which activities bring the most and least happiness.</div>
+<pre class="mermaid">
+flowchart TD
+    TOP["TOP HAPPINESS"] --> A1["Intimate Relations"]
+    TOP --> A2["Socializing"]
+    TOP --> A3["Exercise"]
+    MID["MEDIUM"] --> A4["Eating"]
+    MID --> A5["Relaxing"]
+    MID --> A6["Praying / Meditating"]
+    BOT["BOTTOM"] --> A7["Working"]
+    BOT --> A8["Housework"]
+    BOT --> A9["Commuting"]
+    style TOP fill:#2e7d32,color:#fff
+    style MID fill:#fff3e0,color:#1a1a1a
+    style BOT fill:#fce4ec,color:#1a1a1a
+</pre>
+<div class="exam-tip"><strong>Exam Tip:</strong> The KEY insight is that HOW you spend time matters more than how much money you make. Also: doing activities WITH others boosts happiness vs. doing them alone.</div>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 5: EXTRAORDINARY VS ORDINARY ===== -->
+<div class="section" id="s5" data-nav="Extraordinary vs Ordinary">
+<div class="section-title"><span class="week-badge wb3">W3</span> Extraordinary vs. Ordinary Experiences</div>
+<div class="section-subtitle">What makes you happier depends on your age and time horizon</div>
+
+<div class="dcard">
+<h3>18. Age, Time Horizon & Experience Type</h3>
+<div class="context">Socioemotional Selectivity Theory: when time feels limited, priorities shift.</div>
+<pre class="mermaid">
+flowchart TD
+    YOUNG["YOUNG ADULTS<br/>Expansive time horizon"] --> EXTRA["Prefer EXTRAORDINARY<br/>First skydive, Iceland trip,<br/>Bucket list items"]
+    OLD["OLDER ADULTS<br/>Limited time horizon"] --> ORD["Prefer ORDINARY<br/>Morning coffee with spouse,<br/>Walk in neighborhood"]
+    WHY["Socioemotional<br/>Selectivity Theory"] --> EXP["Expansive time:<br/>Seek novelty,<br/>information, exploration"]
+    WHY --> LIM["Limited time:<br/>Seek emotional meaning,<br/>familiar comfort"]
+    EXTRA --> KEY["KEY: Not about AGE per se.<br/>It is about PERCEIVED time horizon.<br/>Young people told to imagine<br/>moving away also prefer ordinary."]
+    ORD --> KEY
+    style YOUNG fill:#e3f2fd,color:#1a1a1a
+    style OLD fill:#fff3e0,color:#1a1a1a
+    style KEY fill:#fffde7,color:#1a1a1a
+</pre>
+</div>
+</div>
+
+<!-- ===== SECTION 6: SOCIAL CONNECTION ===== -->
+<div class="section" id="s6" data-nav="Week 4: Social Connection">
+<div class="section-title"><span class="week-badge wb4">W4</span> Social Connection</div>
+<div class="section-subtitle">The #1 predictor of happiness and longevity</div>
+
+<div class="dcard">
+<h3>19. Harvard Study: Relationships Are #1</h3>
+<div class="context">75+ year longitudinal study reveals the single biggest predictor of a happy life.</div>
+<pre class="mermaid">
+mindmap
+  root((HARVARD STUDY))
+    Finding
+      Strong Relationships = #1 Predictor
+      Not wealth
+      Not fame
+      Not career achievement
+      Not IQ
+    Key Insights
+      Quality over quantity
+      Close confiding relationships matter most
+      Loneliness is as harmful as smoking
+    Implications
+      Invest in relationships like you invest in career
+      Prioritize people over productivity
+      Even small social investments pay huge dividends
+</pre>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>20. Weak Ties Matter</h3>
+<div class="context">Even brief, casual interactions with acquaintances boost well-being.</div>
+<pre class="mermaid">
+flowchart LR
+    EXP["EXPERIMENT:<br/>Coffee Shop"] --> TALK["Talk to barista<br/>Brief friendly chat"]
+    EXP --> SILENT["Order silently<br/>and leave"]
+    TALK --> H["Higher Happiness<br/>More Belonging"]
+    SILENT --> L["Lower Happiness<br/>Less Belonging"]
+    style TALK fill:#e8f5e9,color:#1a1a1a
+    style SILENT fill:#fce4ec,color:#1a1a1a
+    style H fill:#e8f5e9,color:#1a1a1a
+    style L fill:#fce4ec,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>21. Reaching Out Miscalibration</h3>
+<div class="context">We systematically misjudge how others will react to our outreach.</div>
+<pre class="mermaid">
+flowchart TD
+    REACH["REACHING OUT<br/>to someone you<br/>haven't talked to"]
+    REACH --> PRED["What you PREDICT"]
+    REACH --> REAL["What ACTUALLY happens"]
+    PRED --> AWK["Overestimate<br/>awkwardness"]
+    PRED --> BOTH["Underestimate<br/>how much they<br/>appreciate it"]
+    REAL --> NICE["Much LESS awkward<br/>than expected"]
+    REAL --> HAPPY["Other person is<br/>very HAPPY to<br/>hear from you"]
+    style PRED fill:#fce4ec,color:#1a1a1a
+    style REAL fill:#e8f5e9,color:#1a1a1a
+</pre>
+<div class="takeaway"><strong>Key:</strong> This miscalibration PREVENTS many positive social interactions. Just do it! The other person will be happier than you expect.</div>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 7: ACR ===== -->
+<div class="section" id="s7" data-nav="ACR & Social Media">
+<div class="section-title"><span class="week-badge wb4">W4</span> Active Constructive Responding</div>
+<div class="section-subtitle">How you respond to good news determines relationship quality</div>
+
+<div class="dcard">
+<h3>22. ACR: The 2x2 Model</h3>
+<div class="context">When someone shares good news, there are 4 possible responses. Only ONE builds the relationship.</div>
+<pre class="mermaid">
+flowchart TD
+    NEWS["Friend says:<br/>I got promoted!"] --> AC["ACTIVE CONSTRUCTIVE<br/>That is amazing!<br/>Tell me everything!<br/>How did it happen?"]
+    NEWS --> PC["PASSIVE CONSTRUCTIVE<br/>That's nice.<br/>(goes back to phone)"]
+    NEWS --> AD["ACTIVE DESTRUCTIVE<br/>Won't that mean<br/>more stress?"]
+    NEWS --> PD["PASSIVE DESTRUCTIVE<br/>Oh, did you hear<br/>what happened to ME?"]
+    AC --> GOOD["BUILDS<br/>Relationship"]
+    PC --> BAD1["DISMISSES"]
+    AD --> BAD2["DEFLATES"]
+    PD --> BAD3["IGNORES"]
+    style AC fill:#2e7d32,color:#fff
+    style GOOD fill:#e8f5e9,color:#1a1a1a
+    style PC fill:#f5f5f5,color:#1a1a1a
+    style AD fill:#fce4ec,color:#1a1a1a
+    style PD fill:#fff3e0,color:#1a1a1a
+</pre>
+<div class="exam-tip"><strong>Exam Tip:</strong> ACR is the ONLY response that builds relationships. It works by helping the person relive and savor the positive experience, creating a shared positive moment.</div>
+</div>
+
+<div class="dcard">
+<h3>23. Social Media: Passive vs Active</h3>
+<div class="context">The mode of social media use matters more than total screen time.</div>
+<pre class="mermaid">
+flowchart LR
+    SM["SOCIAL MEDIA<br/>USE"] --> PASS["PASSIVE<br/>Scrolling, Comparing"]
+    SM --> ACT["ACTIVE<br/>Messaging, Commenting"]
+    PASS --> NEG["Increases comparison<br/>FOMO<br/>Decreases well-being"]
+    ACT --> OK["Can strengthen<br/>connections<br/>Neutral to slightly positive"]
+    style PASS fill:#fce4ec,color:#1a1a1a
+    style ACT fill:#e8f5e9,color:#1a1a1a
+    style NEG fill:#fce4ec,color:#1a1a1a
+    style OK fill:#e8f5e9,color:#1a1a1a
+</pre>
+</div>
+</div>
+
+<!-- ===== SECTION 8: GRATITUDE ===== -->
+<div class="section" id="s8" data-nav="Week 5: Gratitude">
+<div class="section-title"><span class="week-badge wb5">W5</span> Gratitude</div>
+<div class="section-subtitle">One of the most effective happiness interventions</div>
+
+<div class="dcard">
+<h3>24. Two Components + Two Practices</h3>
+<div class="context">Gratitude needs both noticing AND recognizing. Two main practice methods.</div>
+<pre class="mermaid">
+flowchart TD
+    G["GRATITUDE"] --> C1["Component 1:<br/>NOTICE the good<br/>in your life"]
+    G --> C2["Component 2:<br/>RECOGNIZE outside<br/>contributions"]
+    C1 --> P1["GRATITUDE JOURNAL<br/>Write 3-5 things weekly<br/>Weekly better than daily<br/>Link to existing habit"]
+    C2 --> P2["GRATITUDE LETTER<br/>Write to someone who helped<br/>Read it to them in person<br/>Effects last MONTHS"]
+    P1 --> E1["Moderate, sustained<br/>effects with practice"]
+    P2 --> E2["One of MOST powerful<br/>interventions known"]
+    style G fill:#6a1b9a,color:#fff
+    style P1 fill:#f3e5f5,color:#1a1a1a
+    style P2 fill:#f3e5f5,color:#1a1a1a
+    style E2 fill:#e8f5e9,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>25. Gratitude Letter Miscalibration</h3>
+<div class="context">Same pattern as reaching out: we misjudge the experience.</div>
+<pre class="mermaid">
+flowchart TD
+    GL["GRATITUDE LETTER<br/>VISIT"] --> OVER["People OVERESTIMATE<br/>how awkward<br/>it will be"]
+    GL --> UNDER["People UNDERESTIMATE<br/>how happy the<br/>recipient will feel"]
+    OVER --> BARRIER["This miscalibration<br/>PREVENTS people<br/>from doing it"]
+    UNDER --> BARRIER
+    BARRIER --> LOSS["HUGE LOSS:<br/>Missing out on one of<br/>the most effective<br/>happiness interventions"]
+    style OVER fill:#fce4ec,color:#1a1a1a
+    style UNDER fill:#fce4ec,color:#1a1a1a
+    style LOSS fill:#fffde7,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>26. Workplace Gratitude</h3>
+<div class="context">A simple "thank you" from a supervisor had massive productivity effects.</div>
+<pre class="mermaid">
+flowchart LR
+    SUP["Supervisor says<br/>genuine THANK YOU"] --> EMP["Employees"]
+    EMP --> RESULT["50% MORE<br/>phone calls made"]
+    RESULT --> WHY["Why? Feeling valued<br/>and appreciated<br/>boosts motivation"]
+    style SUP fill:#f3e5f5,color:#1a1a1a
+    style RESULT fill:#e8f5e9,color:#1a1a1a
+</pre>
+<div class="takeaway"><strong>Key:</strong> Gratitude is not just feel-good. It has measurable effects on performance and motivation. One simple expression of thanks = 50% productivity increase.</div>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 9: PRACTICES ===== -->
+<div class="section" id="s9" data-nav="Week 5: Mind, Body & Flow">
+<div class="section-title"><span class="week-badge wb5">W5</span> Mindfulness, Exercise, Sleep & Flow</div>
+<div class="section-subtitle">The science of well-being practices</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>27. Mind Wandering: 47% of the Time</h3>
+<div class="context">Our minds wander nearly half the time, and it makes us unhappy.</div>
+<pre class="mermaid">
+pie title Where Is Your Mind?
+    "Present & Focused (53%)" : 53
+    "Mind Wandering (47%)" : 47
+</pre>
+<div class="takeaway"><strong>Key finding:</strong> A wandering mind is an unhappy mind. Even wandering to PLEASANT topics is less happy than being fully present. Mindfulness is the antidote.</div>
+</div>
+
+<div class="dcard">
+<h3>28. Flow: Challenge-Skill Model</h3>
+<div class="context">Flow happens when challenge matches skill. It occurs more at WORK than leisure!</div>
+<pre class="mermaid">
+quadrantChart
+    title Challenge-Skill Model
+    x-axis Low Skill --> High Skill
+    y-axis Low Challenge --> High Challenge
+    quadrant-1 FLOW - Sweet Spot!
+    quadrant-2 ANXIETY - Too Hard
+    quadrant-3 APATHY - Don't Care
+    quadrant-4 BOREDOM - Too Easy
+</pre>
+<div class="exam-tip"><strong>Exam Tip:</strong> Flow conditions: clear goals, immediate feedback, challenge = skill. Flow at work > leisure because work naturally provides goals, feedback, and challenge. Paradox: people want more leisure but experience more flow at work.</div>
+</div>
+</div>
+
+<div class="dcard">
+<h3>29. Exercise vs. Medication for Depression</h3>
+<div class="context">Both work equally well initially, but exercise wins long-term due to attribution.</div>
+<pre class="mermaid">
+flowchart TD
+    DEP["DEPRESSION<br/>TREATMENT"] --> EX["EXERCISE"]
+    DEP --> MED["MEDICATION"]
+    EX --> EFF1["Initial Effect:<br/>EQUALLY effective"]
+    MED --> EFF2["Initial Effect:<br/>EQUALLY effective"]
+    EX --> REL1["Relapse: Only 9%"]
+    MED --> REL2["Relapse: 38%"]
+    REL1 --> WHY1["INTERNAL Attribution<br/>I put in the work.<br/>I have control.<br/>I did this myself."]
+    REL2 --> WHY2["EXTERNAL Attribution<br/>The pill fixed me.<br/>I didn't do it.<br/>Less sense of agency."]
+    style EX fill:#e8f5e9,color:#1a1a1a
+    style MED fill:#f5f5f5,color:#1a1a1a
+    style REL1 fill:#2e7d32,color:#fff
+    style REL2 fill:#c62828,color:#fff
+    style WHY1 fill:#e8f5e9,color:#1a1a1a
+    style WHY2 fill:#fce4ec,color:#1a1a1a
+</pre>
+<div class="takeaway"><strong>Key:</strong> Internal attribution (I did this) vs external attribution (the pill did it) explains the difference. Exercise gives people a sense of AGENCY and CONTROL that protects against relapse.</div>
+</div>
+
+<div class="dgrid">
+<div class="dcard">
+<h3>30. Sleep: The Cascade Effect</h3>
+<div class="context">Poor sleep creates a vicious cycle that undermines every other happiness practice.</div>
+<pre class="mermaid">
+flowchart TD
+    POOR["POOR SLEEP"] --> NEG["More Negative<br/>Emotions"]
+    POOR --> POS["Fewer Positive<br/>Emotions"]
+    NEG --> SOC["Worse Social<br/>Connection"]
+    POS --> SOC
+    SOC --> EX["Less Motivation<br/>to Exercise"]
+    EX --> MIND["Harder to Practice<br/>Mindfulness"]
+    MIND --> POOR2["Even Worse<br/>Sleep Quality"]
+    POOR2 --> NEG
+    style POOR fill:#c62828,color:#fff
+    style POOR2 fill:#c62828,color:#fff
+</pre>
+<div class="takeaway"><strong>Key:</strong> Sleep is the FOUNDATION. 7-9 hrs recommended. Sleep deprivation increases negative AND decreases positive emotions. It impairs everything else.</div>
+</div>
+
+<div class="dcard">
+<h3>31. Mindfulness: Definition & Benefits</h3>
+<div class="context">The antidote to mind wandering. Simple, free, and scientifically validated.</div>
+<pre class="mermaid">
+mindmap
+  root((MINDFULNESS))
+    Definition
+      Present-moment attention
+      On purpose
+      Without judgment
+    Benefits
+      Reduces stress and anxiety
+      Increases positive emotions
+      Improves focus
+      Enhances relationships
+      Changes brain structure
+    Practical Tips
+      Mindful eating/one meal, no phone
+      3 deep breaths before class
+      Walk mindfully between buildings
+      Link to existing habits
+</pre>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 10: EXAM CHEAT ===== -->
+<div class="section" id="s10" data-nav="Exam Quick Reference">
+<div class="section-title"><span class="week-badge wb0">EXAM</span> Final Exam Quick Reference</div>
+<div class="section-subtitle">Everything you need to remember, in two diagrams</div>
+
+<div class="dcard">
+<h3>32. What DOES vs DOESN'T Make You Happy</h3>
+<div class="context">The ultimate two-column summary of 5 weeks of science.</div>
+<pre class="mermaid">
+flowchart TD
+    DOES["DOES Make You Happy"] --> D1["Strong Relationships - #1 predictor"]
+    DOES --> D2["Gratitude - fights adaptation"]
+    DOES --> D3["Time Crafting - spend time wisely"]
+    DOES --> D4["Exercise - nature's antidepressant"]
+    DOES --> D5["Mindfulness - be present"]
+    DOES --> D6["Flow Activities - challenge = skill"]
+    DOES --> D7["Good Sleep - foundation of all"]
+    DOES --> D8["Experiences over Things"]
+    DOESNT["DOESN'T Make You As Happy<br/>As You Think"] --> N1["More money beyond ~$75K"]
+    DOESNT --> N2["Status symbols and material goods"]
+    DOESNT --> N3["Achieving goals - adaptation kicks in"]
+    DOESNT --> N4["Changing circumstances - only 10%"]
+    DOESNT --> N5["Passive social media scrolling"]
+    DOESNT --> N6["Eliminating all negative emotions"]
+    style DOES fill:#2e7d32,color:#fff
+    style DOESNT fill:#c62828,color:#fff
+    style D1 fill:#e8f5e9,color:#1a1a1a
+    style D2 fill:#e8f5e9,color:#1a1a1a
+    style D3 fill:#e8f5e9,color:#1a1a1a
+    style D4 fill:#e8f5e9,color:#1a1a1a
+    style D5 fill:#e8f5e9,color:#1a1a1a
+    style D6 fill:#e8f5e9,color:#1a1a1a
+    style D7 fill:#e8f5e9,color:#1a1a1a
+    style D8 fill:#e8f5e9,color:#1a1a1a
+    style N1 fill:#fce4ec,color:#1a1a1a
+    style N2 fill:#fce4ec,color:#1a1a1a
+    style N3 fill:#fce4ec,color:#1a1a1a
+    style N4 fill:#fce4ec,color:#1a1a1a
+    style N5 fill:#fce4ec,color:#1a1a1a
+    style N6 fill:#fce4ec,color:#1a1a1a
+</pre>
+</div>
+
+<div class="dcard">
+<h3>33. Exam Strategy</h3>
+<div class="context">What the professor said about the exam format and expectations.</div>
+<pre class="mermaid">
+flowchart TD
+    EXAM["MIDTERM EXAM<br/>Feb 10, 2026<br/>15% of grade"] --> F1["Closed book, ~90 min"]
+    EXAM --> F2["Mostly SHORT ANSWER<br/>+ some MC"]
+    EXAM --> F3["NO researcher names needed"]
+    F3 --> FOCUS["FOCUS ON:"]
+    FOCUS --> T1["High-level TAKEAWAYS"]
+    FOCUS --> T2["APPLY concepts to real life"]
+    FOCUS --> T3["Show UNDERSTANDING<br/>not just memorization"]
+    FOCUS --> T4["Use COMPLETE sentences<br/>for short answer"]
+    style EXAM fill:#1565c0,color:#fff
+    style FOCUS fill:#e3f2fd,color:#1a1a1a
+</pre>
+</div>
+</div>
+
+</div><!-- end atlas -->
+
+<script>
+// Build Notion nav from sections
+const sections = document.querySelectorAll('.section');
+const navLines = document.getElementById('navLines');
+const navPanel = document.getElementById('navPanel');
+
+sections.forEach((sec, i) => {
+    const line = document.createElement('div');
+    line.className = 'nav-line';
+    line.dataset.idx = i;
+    navLines.appendChild(line);
+
+    const item = document.createElement('div');
+    item.className = 'nav-item';
+    item.textContent = sec.dataset.nav || `Section ${i}`;
+    item.onclick = () => sec.scrollIntoView({ behavior: 'smooth' });
+    navPanel.appendChild(item);
+});
+
+// Track current section
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const idx = Array.from(sections).indexOf(entry.target);
+            document.querySelectorAll('.nav-line').forEach((l, i) => l.classList.toggle('active', i === idx));
+            document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === idx));
+        }
+    });
+}, { threshold: 0.2 });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
